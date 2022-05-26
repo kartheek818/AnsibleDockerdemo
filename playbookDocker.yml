@@ -1,0 +1,16 @@
+- hosts: webserver
+  become: true
+  tasks:
+  - name: Install git & docker
+    yum: name={{item}} state=present
+    loop:
+     - git
+     - docker
+  - name: Start docker
+    service: name=docker state=started
+  - name: clone the req repo on the host
+    git: repo=https://github.com/kartheek818/AnsibleDockerdemo.git dest=/tmp/gitrepo
+  - name: Build the image
+    command: chdir=/tmp/gitrepo docker build -t myimage .
+  - name: Run the image for deploying the war file
+    command: docker run -d -P myimage
