@@ -1,0 +1,19 @@
+- hosts: webserver
+  become: true
+  tasks:
+  - name: ensure repository key is installed
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+  - name: ensure docker registry is available
+      apt_repository: repo='deb https://download.docker.com/linux/ubuntu bionic stable' state=present
+  - name: ensure docker and dependencies are installed
+      apt: name=docker-ce update_cache=yes
+  - name: Start docker
+    service: name=docker state=started
+  - name: clone the req repo on the host
+    git: repo=https://github.com/kartheek818/AnsibleDockerdemo.git dest=/tmp/gitrepo
+  - name: Build the image
+    command: chdir=/tmp/gitrepo docker build -t myimage .
+  - name: Run the image for deploying the war file
+    command: docker run -d -P myimage
